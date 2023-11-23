@@ -95,12 +95,29 @@ void returnItem() {
     cout << "반납할 물품을 찾을 수 없습니다." << endl;
 }
 
+
+void viewItems() {
+    cout << "\n[모든 물품 리스트]\n";
+    for (const auto& item : items) {
+        cout << item.name << " - 총 수량: " << item.totalQuantity << ", 남은 수량: " << item.availableQuantity << ", 대여 중: " << item.totalQuantity - item.availableQuantity << endl;
+    }
+}
+
+void viewRenters() {
+    cout << "\n[대여 중인 물품 리스트]\n";
+    for (const auto& renter : renters) {
+        cout << "학과: " << renter.department << ", 학번: " << renter.studentID << ", 이름: " << renter.studentName << ", 대여 물품: " << renter.itemName << endl;
+    }
+}
+
 int main() {
     while (true) {
         cout << "\n물품 관리 프로그램" << endl;
         cout << "1. 물품 추가" << endl;
         cout << "2. 물품 대여" << endl;
         cout << "3. 물품 반납" << endl;
+        cout << "4. 모든 물품 리스트 보기" << endl;
+        cout << "5. 대여 중인 물품 리스트 보기" << endl;
         cout << "0. 종료" << endl;
         cout << "선택: ";
 
@@ -111,6 +128,8 @@ int main() {
         case 1: addItem(); break;
         case 2: rentItem(); break;
         case 3: returnItem(); break;
+        case 4: viewItems(); break;
+        case 5: viewRenters(); break;
         case 0: return 0;
         default: cout << "잘못된 선택입니다." << endl;
         }
