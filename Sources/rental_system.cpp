@@ -125,7 +125,8 @@ void returnItem() {
 void viewItems() {
     cout << "\n[모든 물품 리스트]\n";
     for (const auto& item : items) {
-        cout << item.name << " - 총 수량: " << item.totalQuantity << ", 남은 수량: " << item.availableQuantity << ", 대여 중: " << item.totalQuantity - item.availableQuantity << endl;
+        cout << item.name << " - 총 수량: " << item.totalQuantity << ", 남은 수량: " << item.availableQuantity
+             << ", 대여 중: " << item.totalQuantity - item.availableQuantity << endl;
     }
 }
 
