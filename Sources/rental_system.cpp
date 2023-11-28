@@ -27,14 +27,19 @@ public:
     string itemName;  // 대여한 물품 이름
     system_clock::time_point rentedTime;  // 대여한 시간
     system_clock::time_point dueTime;  // 반납 예정 시간
+    bool isPenalized;  // 연체로 인한 패널티 여부
+    system_clock::time_point penaltyEnd;  // 패널티 종료 시간
+
 
     // 생성자: 대여자 정보와 대여 시간, 반납 예정 시간을 초기화한다.
     Renter(string dept, string id, string name, string item, system_clock::time_point rented, system_clock::time_point due)
         : department(dept), studentID(id), studentName(name), itemName(item), rentedTime(rented), dueTime(due) {}
 };
 
+
 vector<Item> items;  // 모든 물품을 저장하는 벡터
 vector<Renter> renters;  // 모든 대여자를 저장하는 벡터
+vector<Renter> penalizedRenters;  // 연체자를 저장하는 벡터
 
 // 물품을 추가하는 함수
 void addItem() {
@@ -72,11 +77,27 @@ void rentItem() {
                 item.availableQuantity--;
 
                 auto now = system_clock::now();
-                auto due = now + hours(48); // 48시간 후로 설정
+                auto due = now + hours(48); // 반납 예정 시간을 48시간 후로 설정
+                // auto due = now + seconds(30); // 반납 예정 시간 작동 테스트용 코드(30초로 설정)
 
+                // 시간 출력을 위한 코드
                 time_t dueTime_t = system_clock::to_time_t(due);
                 struct tm dueTm;
                 localtime_s(&dueTm, &dueTime_t);
+
+                // 대여자가 연체 패널티를 받은 경우 대여 해주지 않음
+                for (auto& renter : penalizedRenters) {
+                    // 시간 출력을 위한 코드
+                    time_t penaltyEndTime_t = system_clock::to_time_t(renter.penaltyEnd);
+                    struct tm penaltyEndTm;
+                    localtime_s(&penaltyEndTm, &penaltyEndTime_t);
+
+                    if (renter.studentID == studentID && now < renter.penaltyEnd) {
+                        cout << "연체로 인해 대여가 금지되었습니다." << endl;
+                        cout << "대여 가능 시간: " << put_time(&penaltyEndTm, "%Y-%m-%d %H:%M:%S") << endl;
+                        return;
+                    }
+                }
 
                 renters.push_back(Renter(department, studentID, studentName, itemName, now, due));
                 cout << "대여 완료! 반납 예정 시간: " << put_time(&dueTm, "%Y-%m-%d %H:%M:%S") << endl;
@@ -104,18 +125,34 @@ void returnItem() {
     cout << "반납하려는 물품 이름: ";
     cin >> itemName;
 
+    auto now = system_clock::now(); // 반납 시각 저장
+
     // 대여자 목록에서 해당 대여자 찾기
     for (size_t i = 0; i < renters.size(); ++i) {
         if (renters[i].studentID == studentID && renters[i].itemName == itemName) {
-            // 해당 물품의 수량 증가
+            if (now > renters[i].dueTime) {
+                cout << "물품 반납이 연체되어 7일간 대여가 금지됩니다." << endl;
+                renters[i].isPenalized = true;
+                renters[i].penaltyEnd = now + hours(168);  // 현재로부터 7일 후
+
+                // 시간 출력을 위한 코드
+                time_t penaltyEndTime_t = system_clock::to_time_t(renters[i].penaltyEnd);
+                struct tm penaltyEndTm;
+                localtime_s(&penaltyEndTm, &penaltyEndTime_t);
+
+                cout << "대여 가능 시간: " << put_time(&penaltyEndTm, "%Y-%m-%d %H:%M:%S") << endl;
+                penalizedRenters.push_back(renters[i]);  // 연체자 목록에 추가
+            }
+
             for (auto& item : items) {
                 if (item.name == itemName) {
                     item.availableQuantity++;
                     cout << "반납 완료!" << endl;
-                    renters.erase(renters.begin() + i);  // 대여자 목록에서 제거
-                    return;
                 }
             }
+
+            renters.erase(renters.begin() + i);  // 대여자 목록에서 제거
+            return;
         }
     }
     cout << "반납할 물품을 찾을 수 없습니다." << endl;
