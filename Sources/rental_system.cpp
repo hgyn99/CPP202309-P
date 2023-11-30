@@ -55,6 +55,81 @@ void addItem() {
     items.push_back(Item(name, quantity));
 }
 
+// 물품 수량을 수정하는 함수
+void modifyItem() {
+    string name;
+    int newQuantity;
+
+    cout << "\n[물품 수정]\n";
+    cout << "수정할 물품 이름: ";
+    cin >> name;
+
+    for (auto& item : items) {
+        if (item.name == name) {
+            cout << "현재 총 수량: " << item.totalQuantity << ", 현재 남은 수량: " << item.availableQuantity << endl;
+            cout << "새로운 총 수량 (대여 중인 수량을 포함): ";
+            cin >> newQuantity;
+
+            if (newQuantity < item.totalQuantity - item.availableQuantity) {
+                cout << "오류: 새로운 총 수량은 현재 대여 중인 수량보다 작을 수 없습니다." << endl;
+                return;
+            }
+
+            // 남은 수량을 조정한다.
+            item.availableQuantity = newQuantity - (item.totalQuantity - item.availableQuantity);
+            item.totalQuantity = newQuantity;
+
+            cout << "물품 정보가 수정되었습니다." << endl;
+            return;
+        }
+    }
+
+    cout << "해당 이름의 물품을 찾을 수 없습니다." << endl;
+}
+
+// 물품을 삭제하는 함수
+void deleteItem() {
+    string name;
+    cout << "\n[물품 삭제]\n";
+    cout << "삭제할 물품 이름: ";
+    cin >> name;
+
+    for (auto it = items.begin(); it != items.end(); ++it) {
+        if (it->name == name) {
+            items.erase(it);
+            cout << "물품이 삭제되었습니다." << endl;
+            return;
+        }
+    }
+
+    cout << "해당 이름의 물품을 찾을 수 없습니다." << endl;
+}
+
+
+// 물품을 관리(추가, 수정, 삭제)하는 함수
+void manageItems() {
+    int choice;
+    while (true) {
+        cout << "\n[물품 관리]" << endl;
+        cout << "1. 물품 추가" << endl;
+        cout << "2. 물품 수정" << endl;
+        cout << "3. 물품 삭제" << endl;
+        cout << "0. 메인 메뉴로 돌아가기" << endl;
+        cout << "선택: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: addItem(); break;
+        case 2: modifyItem(); break;
+        case 3: deleteItem(); break;
+        case 0: return;
+        default: cout << "잘못된 선택입니다." << endl;
+        }
+    }
+}
+
+
+
 // 물품을 대여하는 함수
 void rentItem() {
     string department, studentID, studentName, itemName;
@@ -163,7 +238,7 @@ void viewItems() {
     cout << "\n[모든 물품 리스트]\n";
     for (const auto& item : items) {
         cout << item.name << " - 총 수량: " << item.totalQuantity << ", 남은 수량: " << item.availableQuantity
-             << ", 대여 중: " << item.totalQuantity - item.availableQuantity << endl;
+            << ", 대여 중: " << item.totalQuantity - item.availableQuantity << endl;
     }
 }
 
@@ -192,7 +267,7 @@ void viewRenters() {
 int main() {
     while (true) {
         cout << "\n물품 관리 프로그램" << endl;
-        cout << "1. 물품 추가" << endl;
+        cout << "1. 물품 관리" << endl;
         cout << "2. 물품 대여" << endl;
         cout << "3. 물품 반납" << endl;
         cout << "4. 모든 물품 리스트 보기" << endl;
@@ -204,7 +279,7 @@ int main() {
         cin >> choice;
 
         switch (choice) {
-        case 1: addItem(); break;
+        case 1: manageItems(); break;
         case 2: rentItem(); break;
         case 3: returnItem(); break;
         case 4: viewItems(); break;
