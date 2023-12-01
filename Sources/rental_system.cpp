@@ -41,6 +41,16 @@ vector<Item> items;  // 모든 물품을 저장하는 벡터
 vector<Renter> renters;  // 모든 대여자를 저장하는 벡터
 vector<Renter> penalizedRenters;  // 연체자를 저장하는 벡터
 
+// 관리자 인증 함수
+bool authenticateAdmin() {
+    string password;
+    cout << "접근을 위한 관리자 비밀번호를 입력하세요: ";
+    cin >> password;
+
+    const string adminPassword = "admin123";  // 정적 비밀번호 생성
+    return password == adminPassword;
+}
+
 // 물품을 추가하는 함수
 void addItem() {
     string name;
@@ -279,11 +289,21 @@ int main() {
         cin >> choice;
 
         switch (choice) {
-        case 1: manageItems(); break;
+            // 관리자 인증이 필요한 기능 영역
+        case 1: 
+        case 5:
+            if (!authenticateAdmin()) {
+                cout << "인증 실패: 접근 권한이 없습니다." << endl;
+                break;
+            }
+              // 관리자 인증 성공 시, 해당 기능 수행
+              if (choice == 1) manageItems();
+              else if (choice == 5) viewRenters();
+              break;
+            // 관리자 인증이 필요하지 않는 기능 영역
         case 2: rentItem(); break;
         case 3: returnItem(); break;
         case 4: viewItems(); break;
-        case 5: viewRenters(); break;
         case 0: return 0;
         default: cout << "잘못된 선택입니다." << endl;
         }
