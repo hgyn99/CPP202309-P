@@ -44,7 +44,7 @@ vector<Renter> penalizedRenters;  // 연체자를 저장하는 벡터
 // 관리자 인증 함수
 bool authenticateAdmin() {
     string password;
-    cout << "접근을 위한 관리자 비밀번호를 입력하세요: ";
+    cout << "관리자 비밀번호를 입력하세요: ";
     cin >> password;
 
     const string adminPassword = "admin123";  // 정적 비밀번호 생성
@@ -259,7 +259,7 @@ void viewRenters() {
         time_t rentedTime_t = system_clock::to_time_t(renter.rentedTime);
         struct tm rentedTm;
         localtime_s(&rentedTm, &rentedTime_t);
-
+        
         time_t dueTime_t = system_clock::to_time_t(renter.dueTime);
         struct tm dueTm;
         localtime_s(&dueTm, &dueTime_t);
@@ -275,6 +275,17 @@ void viewRenters() {
 
 // 메인 함수: 사용자 인터페이스와 프로그램의 메인 루프를 담당
 int main() {
+    bool isAuthenticated = false;  // 관리자 인증 여부를 저장하는 플래그
+
+    // 최초 접속 시 관리자 인증
+    isAuthenticated = authenticateAdmin();
+
+    if (!isAuthenticated) {
+        cout << "인증 실패: 접근 권한이 없습니다." << endl;
+        return 0;  // 인증 실패 시 프로그램 종료
+    }
+    cout << "인증 완료. 시스템에 접속합니다." << endl;
+
     while (true) {
         cout << "\n물품 관리 프로그램" << endl;
         cout << "1. 물품 관리" << endl;
@@ -289,21 +300,11 @@ int main() {
         cin >> choice;
 
         switch (choice) {
-            // 관리자 인증이 필요한 기능 영역
-        case 1: 
-        case 5:
-            if (!authenticateAdmin()) {
-                cout << "인증 실패: 접근 권한이 없습니다." << endl;
-                break;
-            }
-              // 관리자 인증 성공 시, 해당 기능 수행
-              if (choice == 1) manageItems();
-              else if (choice == 5) viewRenters();
-              break;
-            // 관리자 인증이 필요하지 않는 기능 영역
+        case 1: manageItems(); break;
         case 2: rentItem(); break;
         case 3: returnItem(); break;
         case 4: viewItems(); break;
+        case 5: viewRenters(); break;
         case 0: return 0;
         default: cout << "잘못된 선택입니다." << endl;
         }
