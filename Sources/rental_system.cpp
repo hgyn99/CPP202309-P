@@ -3,6 +3,7 @@
 #include <string>
 #include <chrono>
 #include <iomanip>
+#include <fstream>
 
 using namespace std;
 using namespace chrono;
@@ -259,7 +260,7 @@ void viewRenters() {
         time_t rentedTime_t = system_clock::to_time_t(renter.rentedTime);
         struct tm rentedTm;
         localtime_s(&rentedTm, &rentedTime_t);
-        
+
         time_t dueTime_t = system_clock::to_time_t(renter.dueTime);
         struct tm dueTm;
         localtime_s(&dueTm, &dueTime_t);
@@ -272,6 +273,30 @@ void viewRenters() {
             << ", 반납 예정 시간: " << put_time(&dueTm, "%Y-%m-%d %H:%M:%S") << endl;
     }
 }
+
+// 물품 리스트를 파일에 저장하는 함수
+void saveItemsToFile() {
+    ofstream outFile("items.txt");
+    for (const auto& item : items) {
+        outFile << item.name << "," << item.totalQuantity << "," << item.availableQuantity << "\n";
+    }
+    outFile.close();
+    cout << "물품 리스트가 저장되었습니다." << endl;
+}
+
+// 대여자 리스트를 파일에 저장하는 함수
+void saveRentersToFile() {
+    ofstream outFile("renters.txt");
+    for (const auto& renter : renters) {
+        outFile << renter.department << "," << renter.studentID << "," << renter.studentName << ","
+            // 시간 데이터를 저장하기 위한 코드
+            << renter.itemName << "," << duration_cast<seconds>(renter.rentedTime.time_since_epoch()).count() << ","
+            << duration_cast<seconds>(renter.dueTime.time_since_epoch()).count() << "\n";
+    }
+    outFile.close();
+    cout << "대여자 리스트가 저장되었습니다." << endl;
+}
+
 
 // 메인 함수: 사용자 인터페이스와 프로그램의 메인 루프를 담당
 int main() {
@@ -293,6 +318,7 @@ int main() {
         cout << "3. 물품 반납" << endl;
         cout << "4. 모든 물품 리스트 보기" << endl;
         cout << "5. 대여 중인 물품 리스트 보기" << endl;
+        cout << "6. 파일에 데이터 저장하기" << endl;
         cout << "0. 종료" << endl;
         cout << "선택: ";
 
@@ -305,7 +331,14 @@ int main() {
         case 3: returnItem(); break;
         case 4: viewItems(); break;
         case 5: viewRenters(); break;
-        case 0: return 0;
+        case 6:
+            saveItemsToFile();
+            saveRentersToFile();
+            break;
+        case 0: // 데이터를 자동 저장하고 종료
+            saveItemsToFile();
+            saveRentersToFile();
+            return 0;
         default: cout << "잘못된 선택입니다." << endl;
         }
     }
