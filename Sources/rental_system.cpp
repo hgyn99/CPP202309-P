@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace chrono;
@@ -17,6 +18,9 @@ public:
 
     // 생성자: 물품 이름과 수량을 초기화한다.
     Item(string n, int q) : name(n), totalQuantity(q), availableQuantity(q) {}
+
+    // 생성자2
+    Item(string n, int totalQ, int availableQ) : name(n), totalQuantity(totalQ), availableQuantity(availableQ) {}
 };
 
 // Renter 클래스: 대여자 정보를 저장한다.
@@ -60,10 +64,20 @@ void addItem() {
     cout << "\n[물품 추가]\n";
     cout << "물품 이름: ";
     cin >> name;
-    cout << "물품 수량: ";
-    cin >> quantity;
+    // 같은 이름의 물품이 있는지 검사
+    for (const auto& item : items) {
+        if (item.name == name) {
+            cout << "오류: 이미 같은 이름의 물품이 있습니다." << endl;
+            return; // 함수 종료
+        }
+    }
 
+    cout << "물품 수량: ";
+    cin >> quantity;    
+
+    // 같은 이름의 물품이 없으면 추가
     items.push_back(Item(name, quantity));
+    cout << "물품이 추가되었습니다." << endl;
 }
 
 // 물품 수량을 수정하는 함수
@@ -298,18 +312,73 @@ void saveRentersToFile() {
 }
 
 
+// 물품 리스트를 파일에서 불러오는 함수
+void loadItemsFromFile() {
+    ifstream inFile("items.txt");
+    if (!inFile.is_open()) {
+        cerr << "파일을 열 수 없습니다." << endl;
+        return;
+    }
+
+    string line;
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        string name, totalStr, availableStr;
+        getline(ss, name, ',');
+        getline(ss, totalStr, ',');
+        getline(ss, availableStr);
+        int total = stoi(totalStr);
+        int available = stoi(availableStr);
+        items.push_back(Item(name, total, available));
+    }
+
+    inFile.close();
+}
+
+// 대여자 리스트를 파일에서 불러오는 함수
+void loadRentersFromFile() {
+    ifstream inFile("renters.txt");
+    if (!inFile.is_open()) {
+        cerr << "파일을 열 수 없습니다." << endl;
+        return;
+    }
+
+    string line;
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        string dept, id, name, itemName, rentedSecStr, dueSecStr;
+        getline(ss, dept, ',');
+        getline(ss, id, ',');
+        getline(ss, name, ',');
+        getline(ss, itemName, ',');
+        getline(ss, rentedSecStr, ',');
+        getline(ss, dueSecStr);
+        long long rentedSec = stoll(rentedSecStr);
+        long long dueSec = stoll(dueSecStr);
+        time_point<system_clock> rented = system_clock::from_time_t(rentedSec);
+        time_point<system_clock> due = system_clock::from_time_t(dueSec);
+        renters.push_back(Renter(dept, id, name, itemName, rented, due));
+    }
+
+    inFile.close();
+}
+
+
 // 메인 함수: 사용자 인터페이스와 프로그램의 메인 루프를 담당
 int main() {
     bool isAuthenticated = false;  // 관리자 인증 여부를 저장하는 플래그
 
     // 최초 접속 시 관리자 인증
-    isAuthenticated = authenticateAdmin();
-
-    if (!isAuthenticated) {
-        cout << "인증 실패: 접근 권한이 없습니다." << endl;
-        return 0;  // 인증 실패 시 프로그램 종료
+    while (!isAuthenticated) {
+        isAuthenticated = authenticateAdmin();
+        if (!isAuthenticated) {
+            cout << "인증 실패: 올바른 비밀번호를 입력하세요." << endl;
+        }
+        else {
+            cout << "인증 완료. 시스템에 접속합니다." << endl;
+            break;
+        }
     }
-    cout << "인증 완료. 시스템에 접속합니다." << endl;
 
     while (true) {
         cout << "\n물품 관리 프로그램" << endl;
@@ -319,6 +388,7 @@ int main() {
         cout << "4. 모든 물품 리스트 보기" << endl;
         cout << "5. 대여 중인 물품 리스트 보기" << endl;
         cout << "6. 파일에 데이터 저장하기" << endl;
+        cout << "7. 파일에서 데이터 불러오기" << endl;
         cout << "0. 종료" << endl;
         cout << "선택: ";
 
@@ -334,6 +404,11 @@ int main() {
         case 6:
             saveItemsToFile();
             saveRentersToFile();
+            break;
+        case 7:
+            loadItemsFromFile();
+            loadRentersFromFile();
+            cout << "데이터를 불러왔습니다." << endl;
             break;
         case 0: // 데이터를 자동 저장하고 종료
             saveItemsToFile();
