@@ -9,6 +9,8 @@
 using namespace std;
 using namespace chrono;
 
+void viewItems();
+
 // Item 클래스: 물품 정보를 저장한다.
 class Item {
 public:
@@ -64,6 +66,7 @@ void addItem() {
     cout << "\n[물품 추가]\n";
     cout << "물품 이름: ";
     cin >> name;
+
     // 같은 이름의 물품이 있는지 검사
     for (const auto& item : items) {
         if (item.name == name) {
@@ -73,9 +76,15 @@ void addItem() {
     }
 
     cout << "물품 수량: ";
-    cin >> quantity;    
+    cin >> quantity;
 
-    // 같은 이름의 물품이 없으면 추가
+    // 수량이 0인지 검사
+    if (quantity <= 0) {
+        cout << "오류: 물품 수량은 0보다 커야 합니다." << endl;
+        return; // 함수 종료
+    }
+
+    // 같은 이름의 물품이 없고 수량이 0보다 크면 추가
     items.push_back(Item(name, quantity));
     cout << "물품이 추가되었습니다." << endl;
 }
@@ -86,6 +95,9 @@ void modifyItem() {
     int newQuantity;
 
     cout << "\n[물품 수정]\n";
+    // 현재 물품 리스트 출력
+    viewItems();
+    cout << endl;
     cout << "수정할 물품 이름: ";
     cin >> name;
 
@@ -116,6 +128,9 @@ void modifyItem() {
 void deleteItem() {
     string name;
     cout << "\n[물품 삭제]\n";
+    // 현재 물품 리스트 출력
+    viewItems();
+    cout << endl;
     cout << "삭제할 물품 이름: ";
     cin >> name;
 
@@ -166,6 +181,9 @@ void rentItem() {
     cin >> studentID;
     cout << "이름: ";
     cin >> studentName;
+    // 대여자의 편의를 위한 현재 물품 리스트 출력
+    viewItems();
+    cout << endl;
     cout << "대여하려는 물품 이름: ";
     cin >> itemName;
 
