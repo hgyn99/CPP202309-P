@@ -1,49 +1,14 @@
+#include "ItemManager.h"
 #include <iostream>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
+#include <chrono>
 
 using namespace std;
 using namespace chrono;
 
-void viewItems();
-
-// Item 클래스: 물품 정보를 저장한다.
-class Item {
-public:
-    string name;  // 물품 이름
-    int totalQuantity;  // 물품의 총 수량
-    int availableQuantity;  // 현재 대여 가능한 물품 수량
-
-    // 생성자: 물품 이름과 수량을 초기화한다.
-    Item(string n, int q) : name(n), totalQuantity(q), availableQuantity(q) {}
-
-    // 생성자2
-    Item(string n, int totalQ, int availableQ) : name(n), totalQuantity(totalQ), availableQuantity(availableQ) {}
-};
-
-// Renter 클래스: 대여자 정보를 저장한다.
-class Renter {
-public:
-    string department;  // 대여자의 학과
-    string studentID;  // 대여자의 학번
-    string studentName;  // 대여자의 이름
-    string itemName;  // 대여한 물품 이름
-    system_clock::time_point rentedTime;  // 대여한 시간
-    system_clock::time_point dueTime;  // 반납 예정 시간
-    bool isPenalized;  // 연체로 인한 패널티 여부
-    system_clock::time_point penaltyEnd;  // 패널티 종료 시간
-
-
-    // 생성자: 대여자 정보와 대여 시간, 반납 예정 시간을 초기화한다.
-    Renter(string dept, string id, string name, string item, system_clock::time_point rented, system_clock::time_point due)
-        : department(dept), studentID(id), studentName(name), itemName(item), rentedTime(rented), dueTime(due) {}
-};
-
-
+// 전역 변수 정의
 vector<Item> items;  // 모든 물품을 저장하는 벡터
 vector<Renter> renters;  // 모든 대여자를 저장하는 벡터
 vector<Renter> penalizedRenters;  // 연체자를 저장하는 벡터
@@ -379,62 +344,4 @@ void loadRentersFromFile() {
     }
 
     inFile.close();
-}
-
-
-// 메인 함수: 사용자 인터페이스와 프로그램의 메인 루프를 담당
-int main() {
-    bool isAuthenticated = false;  // 관리자 인증 여부를 저장하는 플래그
-
-    // 최초 접속 시 관리자 인증
-    while (!isAuthenticated) {
-        isAuthenticated = authenticateAdmin();
-        if (!isAuthenticated) {
-            cout << "인증 실패: 올바른 비밀번호를 입력하세요." << endl;
-        }
-        else {
-            cout << "인증 완료. 시스템에 접속합니다." << endl;
-            break;
-        }
-    }
-
-    while (true) {
-        cout << "\n물품 관리 프로그램" << endl;
-        cout << "1. 물품 관리" << endl;
-        cout << "2. 물품 대여" << endl;
-        cout << "3. 물품 반납" << endl;
-        cout << "4. 모든 물품 리스트 보기" << endl;
-        cout << "5. 대여 중인 물품 리스트 보기" << endl;
-        cout << "6. 파일에 데이터 저장하기" << endl;
-        cout << "7. 파일에서 데이터 불러오기" << endl;
-        cout << "0. 종료" << endl;
-        cout << "선택: ";
-
-        int choice;
-        cin >> choice;
-
-        switch (choice) {
-        case 1: manageItems(); break;
-        case 2: rentItem(); break;
-        case 3: returnItem(); break;
-        case 4: viewItems(); break;
-        case 5: viewRenters(); break;
-        case 6:
-            saveItemsToFile();
-            saveRentersToFile();
-            break;
-        case 7:
-            loadItemsFromFile();
-            loadRentersFromFile();
-            cout << "데이터를 불러왔습니다." << endl;
-            break;
-        case 0: // 데이터를 자동 저장하고 종료
-            saveItemsToFile();
-            saveRentersToFile();
-            return 0;
-        default: cout << "잘못된 선택입니다." << endl;
-        }
-    }
-
-    return 0;
 }
